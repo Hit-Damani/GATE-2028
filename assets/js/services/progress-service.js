@@ -15,7 +15,7 @@ window.GateProgressService = {
 
         const estVal = document.getElementById('est-completion-val');
         if (estVal) {
-            estVal.textContent = 'Nov 30';
+            estVal.textContent = 'May 31';
         }
 
         if (animate && window.GateUtils) {
@@ -51,13 +51,13 @@ window.GateProgressService = {
 
         const today = new Date();
         const startYear = 2026;
-        const startMonth = 8; // August (1-indexed, starting August 2026)
+        const startMonth = 11;
 
         // End month calculation: at least December of startYear, or current month if later
         let endYear = Math.max(startYear, today.getFullYear());
         let endMonth = (endYear === startYear) ? 12 : (today.getMonth() + 1);
 
-        // Build array of { year, month } starting from August 2026
+        // Build array of { year, month } starting from November 2026
         const monthList = [];
         let y = startYear;
         let m = startMonth;
@@ -105,7 +105,7 @@ window.GateProgressService = {
 
             const grid = card.querySelector('.month-calendar-grid');
 
-            let startDay = (year === 2026 && month === 8) ? 9 : 1;
+            let startDay = (year === 2026 && month === 11) ? 12 : 1;
             const firstDay = new Date(year, month - 1, startDay).getDay();
             const offset = firstDay === 0 ? 7 : firstDay;
             const daysInMonth = new Date(year, month, 0).getDate();
