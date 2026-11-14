@@ -1,0 +1,99 @@
+{
+  "subjectId": "coa",
+  "subjectName": "Computer Organization & Architecture",
+  "totalTasks": 9,
+  "days": [
+    {
+      "id": "coa-day-1",
+      "day": 1,
+      "dayName": "14th Nov (Saturday)",
+      "date": "2026-11-14",
+      "topics": [
+        {
+          "id": "coa-d1-t1",
+          "tasks": [
+            {
+              "id": "coa-basic-of-coa",
+              "title": "Basics of COA"
+            },
+            {
+              "id": "coa-instructions-addressing-modes",
+              "title": "Instructions and Addressing Modes"
+            },
+            {
+              "id": "coa-cpu-control-unit",
+              "title": "CPU & Control Unit"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-2",
+      "day": 2,
+      "dayName": "15th Nov (Sunday)",
+      "date": "2026-11-15",
+      "topics": [
+        {
+          "id": "coa-d2-t1",
+          "tasks": [
+            {
+              "id": "coa-floating-point-representation",
+              "title": "Floating Point Representation"
+            },
+            {
+              "id": "coa-io-organization",
+              "title": "IO Organization"
+            },
+            {
+              "id": "coa-memory-organization",
+              "title": "Memory Organization"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-3",
+      "day": 3,
+      "dayName": "16th - 20th Nov (Mon - Fri)",
+      "date": "2026-11-16",
+      "startDate": "2026-11-16",
+      "endDate": "2026-11-20",
+      "topics": [
+        {
+          "id": "coa-d3-t1",
+          "tasks": [
+            {
+              "id": "coa-cache-organization",
+              "title": "Cache Organization"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-4",
+      "day": 4,
+      "dayName": "21st - 22nd Nov (Sat - Sun)",
+      "date": "2026-11-21",
+      "startDate": "2026-11-21",
+      "endDate": "2026-11-22",
+      "topics": [
+        {
+          "id": "coa-d4-t1",
+          "tasks": [
+            {
+              "id": "coa-magnetic-disk",
+              "title": "Magnetic Disk"
+            },
+            {
+              "id": "coa-pipeline",
+              "title": "Pipeline"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
