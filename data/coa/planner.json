@@ -1,0 +1,110 @@
+{
+  "subjectId": "coa",
+  "subjectName": "Computer Organization & Architecture",
+  "totalTasks": 9,
+  "days": [
+    {
+      "id": "coa-day-1",
+      "day": 1,
+      "dayName": "23rd Nov (Monday)",
+      "date": "2026-11-23",
+      "topics": [
+        {
+          "id": "coa-d1-t1",
+          "tasks": [
+            {
+              "id": "coa-basic-of-coa",
+              "title": "Basics of COA"
+            },
+            {
+              "id": "coa-instructions-addressing-modes",
+              "title": "Instructions and Addressing Modes"
+            },
+            {
+              "id": "coa-cpu-control-unit",
+              "title": "CPU & Control Unit"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-2",
+      "day": 2,
+      "dayName": "24th Nov (Tuesday)",
+      "date": "2026-11-24",
+      "topics": [
+        {
+          "id": "coa-d2-t1",
+          "tasks": [
+            {
+              "id": "coa-floating-point-representation",
+              "title": "Floating Point Representation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-3",
+      "day": 3,
+      "dayName": "25th Nov (Wednesday)",
+      "date": "2026-11-25",
+      "topics": [
+        {
+          "id": "coa-d3-t1",
+          "tasks": [
+            {
+              "id": "coa-io-organization",
+              "title": "IO Organization"
+            },
+            {
+              "id": "coa-memory-organization",
+              "title": "Memory Organization"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-4",
+      "day": 4,
+      "dayName": "26th - 29th Nov (Thu - Sun)",
+      "date": "2026-11-26",
+      "startDate": "2026-11-26",
+      "endDate": "2026-11-29",
+      "topics": [
+        {
+          "id": "coa-d4-t1",
+          "tasks": [
+            {
+              "id": "coa-cache-organization",
+              "title": "Cache Organization"
+            },
+            {
+              "id": "coa-magnetic-disk",
+              "title": "Magnetic Disk"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coa-day-5",
+      "day": 5,
+      "dayName": "30th Nov (Monday)",
+      "date": "2026-11-30",
+      "topics": [
+        {
+          "id": "coa-d5-t1",
+          "tasks": [
+            {
+              "id": "coa-pipeline",
+              "title": "Pipeline"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

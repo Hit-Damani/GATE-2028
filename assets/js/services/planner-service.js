@@ -124,7 +124,7 @@
                 const dayIds = dayTopics.flatMap(t => (t.tasks || []).map(k => k.id));
                 const dayDone = dayIds.filter(id => doneSet.has(id)).length;
                 const isDone = dayDone === dayIds.length && dayIds.length > 0;
-                const isToday = day.date === today;
+                const isToday = day.date === today || (day.startDate && day.endDate && today >= day.startDate && today <= day.endDate);
 
                 return `
                     <div class="day-card ${isDone ? 'completed' : ''} ${isToday ? 'today' : ''}" id="${day.id}">
@@ -133,7 +133,7 @@
                                 <div class="day-number">D${day.day}</div>
                                 <div class="day-info">
                                     <h3>
-                                        ${day.dayName || ('Day ' + day.day)}, ${day.dateLabel || ''}
+                                        ${day.dayName || ('Day ' + day.day)}
                                         ${isToday ? '<span class="today-badge">Today</span>' : ''}
                                     </h3>
                                 </div>
@@ -155,17 +155,21 @@
                                 const topicDone = topicIds.filter(id => doneSet.has(id)).length;
                                 const isTopicDone = topicDone === topicIds.length && topicIds.length > 0;
 
+                                const showTopicHeader = Boolean(topic.name && topic.name.trim() && topic.name.trim().toLowerCase() !== 'topics');
+
                                 return `
                                     <div class="topic-group ${isTopicDone ? 'topic-completed' : ''}" id="topic-group-${topic.id}">
-                                        <div class="topic-header">
-                                            <div class="topic-title-wrapper">
-                                                <span class="topic-tag">Topic ${topicIdx + 1}</span>
-                                                <h4 class="topic-title">${topic.name}</h4>
+                                        ${showTopicHeader ? `
+                                            <div class="topic-header">
+                                                <div class="topic-title-wrapper">
+                                                    <span class="topic-tag">Topic ${topicIdx + 1}</span>
+                                                    <h4 class="topic-title">${topic.name}</h4>
+                                                </div>
+                                                <div class="topic-meta">
+                                                    <span class="topic-count" id="topic-count-${topic.id}"><strong>${topicDone}</strong> / ${topicTasks.length} tasks</span>
+                                                </div>
                                             </div>
-                                            <div class="topic-meta">
-                                                <span class="topic-count" id="topic-count-${topic.id}"><strong>${topicDone}</strong> / ${topicTasks.length} tasks</span>
-                                            </div>
-                                        </div>
+                                        ` : ''}
                                         <div class="tasks-list">
                                             ${topicTasks.map(task => {
                                                 const chk = doneSet.has(task.id);
