@@ -19,12 +19,11 @@ Built with a **zero-framework, lightweight architecture** (HTML5, CSS3, Vanilla 
   - **Month-by-Month Activity Heatmap (`activity.html`)**: Visual calendar tracking daily task density and deep work hours starting from September 2026.
 
 - **Deep Focus Studio (`timer.html`)**:
-  - **Cognitive Pomodoro Engine**: 25-minute and 50-minute structured study sprint modes.
-  - **Circular SVG Countdown Dial**: High-precision SVG ring with ambient radial back-glow, smooth gradient stroke offset, and drift-mitigated `Date.now()` accuracy.
-  - **Live Browser Tab Countdown**: Dynamically updates tab title with real-time remaining minutes and seconds e.g. `(24:59) Focus Studio — GATE 2027`.
+  - **Open Flow Deep Work Engine**: Continuous count-up timer with Start, Pause, Resume, and Finish & Log actions.
+  - **Circular SVG Dial**: High-precision SVG ring with ambient radial back-glow and smooth gradient stroke offset.
+  - **Live Browser Tab Timer**: Dynamically updates tab title with real-time minutes and seconds e.g. `(47:15) Flow — GATE 2027`.
   - **Glassmorphic Subject Picker**: Dropdown menu enabling aspirants to tag focus sessions to any of the 13 GATE CSE subjects.
-  - **Distraction-Free Zen Mode**: Dedicated fullscreen view (toggleable via UI button or `Esc`) that hides sidebars, headers, and UI distractions.
-  - **Cloud Session Persistence**: Automatically persists completed sprints into Supabase `study_sessions` with celebratory toasts, updating Today's Deep Work, Total Sessions, and All-Time study hours.
+  - **Cloud Session Persistence**: Automatically persists logged sessions into Supabase `study_sessions` with celebratory toasts, updating Today's Deep Work, Total Sessions, and All-Time study hours.
 
 - **Dynamic Subject Hub & Study Planner (`subjects/subject.html`)**:
   - **Dynamic Theming Engine**: Custom CSS variable engine applying unique accent glows and color palettes for all 13 GATE subjects.
@@ -76,7 +75,7 @@ GATE-2027/
 │   │       ├── subjects.css        # Subject Cards Grid & Status Badges
 │   │       ├── planner.css         # Sticky Header, Day Cards, Dynamic Theming & Confetti
 │   │       ├── activity.css        # Study Activity Month Cards & Heatmap Grid Styling
-│   │       └── timer.css           # Dial Hero Card, SVG Circular Dial, Zen Mode & History
+│   │       └── timer.css           # Dial Hero Card, SVG Circular Dial & History
 │   │
 │   └── js/
 │       ├── config/

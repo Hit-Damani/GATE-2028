@@ -114,38 +114,18 @@
 
         <!-- Page Body Content -->
         <main class="content-wrapper">
-            <!-- Floating Exit Fullscreen Button (Visible in fullscreen mode) -->
-            <button type="button" class="exit-zen-btn" id="exit-zen-btn" title="Exit Fullscreen (Esc)">
-                <i data-lucide="minimize-2"></i>
-                <span>Exit Fullscreen</span>
-            </button>
-
             <div class="timer-page-wrapper" id="timer-clock-container">
 
                 <!-- Header Block -->
                 <div class="timer-header-block">
                     <div>
                         <h1 class="timer-page-title">Deep Focus Studio</h1>
-                        <p class="timer-page-subtitle">Lock in your study zone with cognitive Pomodoro sprints and real-time deep work logging.</p>
+                        <p class="timer-page-subtitle">Lock in your study zone with continuous flow sessions and real-time deep work logging.</p>
                     </div>
-                    <button type="button" class="zen-mode-toggle-btn" id="zen-mode-toggle" title="Distraction-Free Fullscreen (Press Esc to exit)">
-                        <i data-lucide="maximize-2"></i>
-                        <span>Fullscreen</span>
-                    </button>
                 </div>
 
                 <!-- Clock Dial Hero Card -->
                 <div class="glass-panel timer-hero-card" id="timer-hero-card">
-
-                    <!-- Mode Selectors Bar -->
-                    <div class="timer-mode-pills">
-                        <button type="button" class="timer-mode-pill active" data-mins="25">
-                            <span>25 Minutes</span>
-                        </button>
-                        <button type="button" class="timer-mode-pill" data-mins="50">
-                            <span>50 Minutes</span>
-                        </button>
-                    </div>
 
                     <!-- Subject Tag Picker -->
                     <div class="timer-subject-picker-row">
@@ -158,7 +138,7 @@
                         <div class="custom-subject-dropdown" id="custom-subject-dropdown">
                             <button type="button" class="custom-dropdown-trigger" id="custom-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
                                 <span class="dropdown-selected-dot" id="dropdown-selected-dot"></span>
-                                <span class="dropdown-selected-text" id="dropdown-selected-text">Operating System</span>
+                                <span class="dropdown-selected-text" id="dropdown-selected-text">Computer Organization & Architecture</span>
                                 <i data-lucide="chevron-down" class="dropdown-chevron"></i>
                             </button>
                             <div class="custom-dropdown-menu" id="custom-dropdown-menu" role="listbox"></div>
@@ -166,7 +146,7 @@
 
                         <!-- Hidden select for compatibility -->
                         <select id="timer-subject-select" style="display:none;" aria-hidden="true" tabindex="-1">
-                            <option value="os">Operating System</option>
+                            <option value="coa">Computer Organization & Architecture</option>
                         </select>
                     </div>
 
@@ -189,22 +169,28 @@
                         <!-- Dial Center Content -->
                         <div class="timer-dial-center">
                             <span class="timer-status-badge ready" id="timer-status-badge">READY TO FOCUS</span>
-                            <div class="timer-digits-display" id="timer-clock-display">25:00</div>
-                            <span class="timer-session-hint" id="timer-clock-subtitle">25-Minute Session</span>
+                            <div class="timer-digits-display" id="timer-clock-display">00:00</div>
+                            <span class="timer-session-hint" id="timer-clock-subtitle">Deep Work</span>
                         </div>
                     </div>
 
                     <!-- Main Action Controls -->
                     <div class="timer-actions-row">
-                        <button type="button" class="timer-main-btn primary play" id="timer-btn-primary">
-                            <i data-lucide="play" id="timer-primary-icon"></i>
-                            <span id="timer-primary-text">Start</span>
+                        <button type="button" class="timer-main-btn play" id="timer-btn-primary">
+                            <span class="timer-primary-icon-wrap" id="timer-primary-icon-wrap"><i data-lucide="play"></i></span>
+                            <span id="timer-primary-text">Start Flow</span>
                         </button>
-                        <button type="button" class="timer-secondary-btn reset" id="timer-btn-reset" title="Reset Session">
-                            <i data-lucide="rotate-ccw"></i>
-                            <span>Reset</span>
+                        <button type="button" class="timer-finish-btn" id="timer-btn-finish" style="display: none;" title="Finish and log this session">
+                            <i data-lucide="check"></i>
+                            <span>Finish</span>
                         </button>
                     </div>
+
+                    <!-- Subtle Reset Action when Paused -->
+                    <button type="button" class="timer-reset-link" id="timer-btn-reset" style="display: none;" title="Discard this session">
+                        <i data-lucide="rotate-ccw"></i>
+                        <span>Reset Session</span>
+                    </button>
 
                 </div>
 

@@ -1,18 +1,16 @@
 /**
- * GATE 2027 — Focus Timer Studio Service (Streamlined)
- * Handles circular SVG progress dial, 25m/50m Pomodoro timing,
- * Zen mode, and deep work logging to Supabase.
+ * GATE 2027 — Open Flow Focus Studio Service
+ * Continuous count-up deep work engine with interruption-free study sessions,
+ * precision Date.now() tracking, and direct logging to Supabase.
  */
 
 window.GateTimerService = {
-    durationMins: 25,
-    totalSeconds: 25 * 60,
-    secondsLeft: 25 * 60,
+    secondsElapsed: 0,
+    accumulatedSeconds: 0,
     isRunning: false,
     intervalId: null,
     startTime: null,
-    baseSecondsLeft: 25 * 60,
-    activeSubjectId: 'os',
+    activeSubjectId: 'coa',
     C: 2 * Math.PI * 140, // ~879.65px circumference for r=140
 
     dom: {},
@@ -20,11 +18,13 @@ window.GateTimerService = {
     async init() {
         this.cacheDom();
         if (window.GateStorage?.getLastActiveSubject) {
-            this.activeSubjectId = window.GateStorage.getLastActiveSubject() || 'os';
+            this.activeSubjectId = window.GateStorage.getLastActiveSubject() || 'coa';
         }
         await this.populateSubjectPicker();
+        this.restoreSavedFlowSession();
         this.bindEvents();
         this.updateDisplay();
+        this.updateButtonsUI();
         this.renderStats();
         this.renderHistory();
         window.lucide?.createIcons();
@@ -38,8 +38,9 @@ window.GateTimerService = {
             clockSubtitle: id('timer-clock-subtitle'),
             statusBadge: id('timer-status-badge'),
             primaryBtn: id('timer-btn-primary'),
-            primaryIcon: id('timer-primary-icon'),
+            primaryIconWrap: id('timer-primary-icon-wrap'),
             primaryText: id('timer-primary-text'),
+            finishBtn: id('timer-btn-finish'),
             resetBtn: id('timer-btn-reset'),
             subjectSelect: id('timer-subject-select'),
             customDropdown: id('custom-subject-dropdown'),
@@ -47,9 +48,6 @@ window.GateTimerService = {
             dropdownText: id('dropdown-selected-text'),
             dropdownDot: id('dropdown-selected-dot'),
             dropdownMenu: id('custom-dropdown-menu'),
-            modePills: document.querySelectorAll('.timer-mode-pill'),
-            zenToggle: id('zen-mode-toggle'),
-            exitZenBtn: id('exit-zen-btn'),
             statToday: id('timer-stat-today-hours'),
             statSessions: id('timer-stat-total-sessions'),
             statTotal: id('timer-stat-total-hours'),
@@ -123,6 +121,7 @@ window.GateTimerService = {
         this.updateDropdownTriggerUI();
         this.closeCustomDropdown();
         this.populateSubjectPicker();
+        this.saveFlowState();
     },
 
     updateDropdownTriggerUI() {
@@ -150,6 +149,7 @@ window.GateTimerService = {
 
     bindEvents() {
         this.dom.primaryBtn?.addEventListener('click', () => this.isRunning ? this.pause() : this.start());
+        this.dom.finishBtn?.addEventListener('click', () => this.finishAndLog());
         this.dom.resetBtn?.addEventListener('click', () => this.reset());
 
         // Custom Dropdown trigger
@@ -165,46 +165,20 @@ window.GateTimerService = {
             }
         });
 
-        this.dom.modePills.forEach(pill => {
-            pill.addEventListener('click', () => {
-                this.dom.modePills.forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                const mins = Number(pill.dataset.mins) || 25;
-                this.setDuration(mins);
-            });
-        });
-
-        this.dom.zenToggle?.addEventListener('click', () => this.toggleZenMode(true));
-        this.dom.exitZenBtn?.addEventListener('click', () => this.toggleZenMode(false));
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 this.closeCustomDropdown();
-                if (document.body.classList.contains('zen-mode')) this.toggleZenMode(false);
             }
         });
-    },
-
-    setDuration(mins = 25) {
-        this.pause();
-        this.durationMins = mins;
-        this.totalSeconds = mins * 60;
-        this.secondsLeft = this.totalSeconds;
-        this.baseSecondsLeft = this.secondsLeft;
-        this.setBadge('READY TO FOCUS', 'ready');
-        if (this.dom.clockSubtitle) {
-            this.dom.clockSubtitle.textContent = `${mins}-Minute Session`;
-        }
-        this.updateDisplay();
-        this.updatePrimaryButtonUI();
     },
 
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
         this.startTime = Date.now();
-        this.baseSecondsLeft = this.secondsLeft;
-        this.setBadge('FOCUSING', 'running');
-        this.updatePrimaryButtonUI();
+        this.setBadge('FLOWING', 'running');
+        this.updateButtonsUI();
+        this.saveFlowState();
         clearInterval(this.intervalId);
         this.intervalId = setInterval(() => this.tick(), 250);
     },
@@ -214,48 +188,62 @@ window.GateTimerService = {
         this.isRunning = false;
         clearInterval(this.intervalId);
         this.intervalId = null;
-        this.baseSecondsLeft = this.secondsLeft;
+        this.accumulatedSeconds = this.secondsElapsed;
         this.setBadge('PAUSED', 'paused');
-        this.updatePrimaryButtonUI();
+        this.updateButtonsUI();
+        this.updateDisplay();
+        this.saveFlowState();
     },
 
     tick() {
-        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-        const next = Math.max(0, this.baseSecondsLeft - elapsed);
-        if (next !== this.secondsLeft) {
-            this.secondsLeft = next;
+        const currentElapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const next = this.accumulatedSeconds + currentElapsed;
+        if (next !== this.secondsElapsed) {
+            this.secondsElapsed = next;
             this.updateDisplay();
-            if (this.secondsLeft === 0) this.completeSession();
+            // Periodically save state in case browser is closed
+            if (this.secondsElapsed % 5 === 0) {
+                this.saveFlowState();
+            }
         }
+    },
+
+    async finishAndLog() {
+        this.pause();
+
+        if (this.secondsElapsed < 30) {
+            window.GateErrorHandler?.showToast('Sessions under 1 minute are not saved.', 'info', 3000);
+            this.reset();
+            return;
+        }
+
+        const minutes = Math.max(1, Math.round(this.secondsElapsed / 60));
+        this.setBadge('SESSION LOGGED 🎉', 'completed');
+        await this.logSession(minutes);
+        this.reset();
     },
 
     reset() {
         this.pause();
-        this.secondsLeft = this.totalSeconds;
-        this.baseSecondsLeft = this.secondsLeft;
+        this.secondsElapsed = 0;
+        this.accumulatedSeconds = 0;
+        this.startTime = null;
+        this.clearSavedFlowState();
         this.setBadge('READY TO FOCUS', 'ready');
         this.updateDisplay();
-        this.updatePrimaryButtonUI();
-    },
-
-    async completeSession() {
-        this.pause();
-        this.setBadge('SPRINT COMPLETE 🎉', 'completed');
-        await this.logSession(this.durationMins);
-        this.secondsLeft = this.totalSeconds;
-        this.baseSecondsLeft = this.secondsLeft;
-        this.updateDisplay();
+        this.updateButtonsUI();
     },
 
     async logSession(minutes) {
-        const subId = this.activeSubjectId || 'os';
+        const subId = this.activeSubjectId || 'coa';
         const subName = this.getSubjectDisplayName(subId);
         let ok = true;
         if (window.GateStorage?.saveStudySession) {
-            ok = await window.GateStorage.saveStudySession(subId, minutes, 'pomodoro');
+            ok = await window.GateStorage.saveStudySession(subId, minutes, 'stopwatch');
         }
         if (ok) {
-            window.GateErrorHandler?.showToast(`🎉 Logged ${minutes}m of deep work for ${subName}!`, 'success', 4000);
+            const timeLabel = minutes >= 60 ? `${(minutes / 60).toFixed(1)}h` : `${minutes}m`;
+            window.GateErrorHandler?.showToast(`🎉 Logged ${timeLabel} of deep work for ${subName}!`, 'success', 4000);
             this.renderStats();
             this.renderHistory();
         } else {
@@ -270,41 +258,128 @@ window.GateTimerService = {
     },
 
     formatTime(secs) {
-        const m = Math.floor(secs / 60), s = secs % 60;
-        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        const hrs = Math.floor(secs / 3600);
+        const mins = Math.floor((secs % 3600) / 60);
+        const s = secs % 60;
+        if (hrs > 0) {
+            return `${hrs}:${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return `${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     },
 
     updateDisplay() {
-        const timeStr = this.formatTime(this.secondsLeft);
-        if (this.dom.clockDisplay) this.dom.clockDisplay.textContent = timeStr;
+        const timeStr = this.formatTime(this.secondsElapsed);
+        if (this.dom.clockDisplay) {
+            this.dom.clockDisplay.textContent = timeStr;
+            this.dom.clockDisplay.classList.toggle('has-hours', timeStr.length > 5);
+        }
+
+        if (this.dom.clockSubtitle) {
+            if (this.secondsElapsed === 0) {
+                this.dom.clockSubtitle.textContent = 'Deep Work';
+            } else {
+                const hrs = (this.secondsElapsed / 3600).toFixed(1);
+                const mins = Math.floor(this.secondsElapsed / 60);
+                this.dom.clockSubtitle.textContent = this.secondsElapsed >= 60 ? `${hrs}h Logged (${mins} mins)` : `${this.secondsElapsed}s Elapsed`;
+            }
+        }
 
         if (this.dom.circleProgress) {
-            const fraction = this.totalSeconds > 0 ? this.secondsLeft / this.totalSeconds : 1;
-            this.dom.circleProgress.style.strokeDashoffset = (this.C * (1 - fraction)).toFixed(2);
+            // Fills smoothly across a 60-minute loop, completing full circle each hour
+            const cycle = (this.secondsElapsed % 3600) / 3600;
+            const offset = this.secondsElapsed === 0 ? this.C : (this.C * (1 - cycle));
+            this.dom.circleProgress.style.strokeDashoffset = offset.toFixed(2);
         }
-        document.title = this.isRunning ? `(${timeStr}) Focus Studio — GATE 2027` : 'Focus Studio — GATE 2027';
+
+        if (this.isRunning) {
+            document.title = `(${timeStr}) Flow — GATE 2027`;
+        } else if (this.secondsElapsed > 0) {
+            document.title = `[Paused] (${timeStr}) Flow — GATE 2027`;
+        } else {
+            document.title = 'Focus Studio — GATE 2027';
+        }
     },
 
-    updatePrimaryButtonUI() {
+    updateButtonsUI() {
         if (!this.dom.primaryBtn) return;
         const btn = this.dom.primaryBtn;
+
         if (this.isRunning) {
             btn.className = 'timer-main-btn pause';
             if (this.dom.primaryText) this.dom.primaryText.textContent = 'Pause';
-            this.dom.primaryIcon?.setAttribute('data-lucide', 'pause');
+            if (this.dom.primaryIconWrap) this.dom.primaryIconWrap.innerHTML = '<i data-lucide="pause"></i>';
         } else {
-            btn.className = 'timer-main-btn primary play';
-            const started = this.secondsLeft < this.totalSeconds;
-            if (this.dom.primaryText) this.dom.primaryText.textContent = started ? 'Resume' : 'Start';
-            this.dom.primaryIcon?.setAttribute('data-lucide', 'play');
+            btn.className = 'timer-main-btn play';
+            const hasStarted = this.secondsElapsed > 0;
+            if (this.dom.primaryText) this.dom.primaryText.textContent = hasStarted ? 'Resume' : 'Start Flow';
+            if (this.dom.primaryIconWrap) this.dom.primaryIconWrap.innerHTML = '<i data-lucide="play"></i>';
+        }
+
+        // Finish button is visible whenever a session has started or is running
+        if (this.dom.finishBtn) {
+            const canFinish = this.secondsElapsed >= 10 || this.isRunning;
+            this.dom.finishBtn.style.display = canFinish ? 'inline-flex' : 'none';
+        }
+
+        // Reset button visible when paused with time on clock
+        if (this.dom.resetBtn) {
+            const canReset = this.secondsElapsed > 0 && !this.isRunning;
+            this.dom.resetBtn.style.display = canReset ? 'inline-flex' : 'none';
         }
 
         window.lucide?.createIcons();
     },
 
-    toggleZenMode(enable) {
-        document.body.classList.toggle('zen-mode', enable);
-        window.lucide?.createIcons();
+    saveFlowState() {
+        if (this.secondsElapsed === 0 && !this.isRunning) {
+            this.clearSavedFlowState();
+            return;
+        }
+        try {
+            const state = {
+                accumulatedSeconds: this.accumulatedSeconds,
+                startTime: this.startTime,
+                isRunning: this.isRunning,
+                subjectId: this.activeSubjectId,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('gate_flow_state', JSON.stringify(state));
+        } catch (e) {}
+    },
+
+    clearSavedFlowState() {
+        try {
+            localStorage.removeItem('gate_flow_state');
+        } catch (e) {}
+    },
+
+    restoreSavedFlowSession() {
+        try {
+            const raw = localStorage.getItem('gate_flow_state');
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (!state) return;
+
+            if (state.subjectId) {
+                this.activeSubjectId = state.subjectId;
+            }
+
+            if (state.isRunning && state.startTime) {
+                const now = Date.now();
+                const diffSecs = Math.floor((now - state.startTime) / 1000);
+                this.accumulatedSeconds = (state.accumulatedSeconds || 0) + diffSecs;
+                this.secondsElapsed = this.accumulatedSeconds;
+                this.isRunning = true;
+                this.startTime = now;
+                this.setBadge('FLOWING', 'running');
+                clearInterval(this.intervalId);
+                this.intervalId = setInterval(() => this.tick(), 250);
+            } else if (state.accumulatedSeconds > 0) {
+                this.accumulatedSeconds = state.accumulatedSeconds;
+                this.secondsElapsed = state.accumulatedSeconds;
+                this.setBadge('PAUSED', 'paused');
+            }
+        } catch (e) {}
     },
 
     renderStats() {
@@ -326,10 +401,11 @@ window.GateTimerService = {
         }
 
         this.dom.historyList.innerHTML = sessions.slice(0, 10).map(s => {
-            const mins = Number(s.duration_minutes) || 25;
+            const mins = Number(s.duration_minutes) || 0;
             const sub = this.getSubjectDisplayName(s.subject_id);
             const rawDate = s.session_date || (s.created_at ? s.created_at.split('T')[0] : '');
             const dateDisplay = this.formatSessionDate(rawDate);
+            const durationLabel = mins >= 60 ? `+${(mins / 60).toFixed(1)}h` : `+${mins}m`;
 
             return `<div class="history-session-item">
                 <div class="session-left-meta">
@@ -339,7 +415,7 @@ window.GateTimerService = {
                     </div>
                 </div>
                 <div class="session-right-meta">
-                    <span class="session-duration">+${mins}m</span>
+                    <span class="session-duration">${durationLabel}</span>
                 </div>
             </div>`;
         }).join('');
